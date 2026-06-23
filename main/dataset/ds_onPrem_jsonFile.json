@@ -1,0 +1,41 @@
+{
+	"name": "ds_onPrem_jsonFile",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "dkPc_fileSystem",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"p_filename": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "Json",
+		"typeProperties": {
+			"location": {
+				"type": "FileServerLocation",
+				"fileName": {
+					"value": "@dataset().p_filename",
+					"type": "Expression"
+				},
+				"folderPath": "OnPrem_JsonFormat"
+			}
+		},
+		"schema": {
+			"type": "object",
+			"properties": {
+				"Emp_id": {
+					"type": "integer"
+				},
+				"Stack_Layer": {
+					"type": "string"
+				},
+				"Tools_Technologies": {
+					"type": "string"
+				}
+			}
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

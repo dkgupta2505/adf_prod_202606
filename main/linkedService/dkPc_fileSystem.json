@@ -1,0 +1,17 @@
+{
+	"name": "dkPc_fileSystem",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "FileServer",
+		"typeProperties": {
+			"host": "E:\\Azure-Databricks\\Data\\emp_db\\csv\\Adf+databricks",
+			"userId": "dk.gupta25@outlook.com",
+			"encryptedCredential": "eyJDcmVkZW50aWFsSWQiOiJkZTkxYmIxMy0xNmExLTQ1NmUtODkwOC0zYjc4MWRlZDhlNzkiLCJWZXJzaW9uIjoiMi4wIiwiQ2xhc3NUeXBlIjoiTWljcm9zb2Z0LkRhdGFQcm94eS5Db3JlLkludGVyU2VydmljZURhdGFDb250cmFjdC5DcmVkZW50aWFsU1UwNkNZMTQifQ=="
+		},
+		"connectVia": {
+			"referenceName": "dkPc",
+			"type": "IntegrationRuntimeReference"
+		}
+	}
+}

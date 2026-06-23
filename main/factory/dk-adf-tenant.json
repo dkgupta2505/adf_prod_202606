@@ -1,0 +1,15 @@
+{
+	"name": "dk-adf-tenant",
+	"properties": {
+		"trustModeClaimForMi": {
+			"value": "Disabled",
+			"editable": true
+		}
+	},
+	"location": "centralindia",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "441a3564-189d-4c44-80f1-4a2fca302323",
+		"tenantId": "b2890ef3-81bf-4bc0-904a-fed3b61f90a5"
+	}
+}

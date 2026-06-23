@@ -1,0 +1,118 @@
+{
+	"name": "emp_silver",
+	"properties": {
+		"activities": [
+			{
+				"name": "get_SilverData",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "df_silver",
+						"type": "DataFlowReference",
+						"datasetParameters": {
+							"dimEmpRwData": {
+								"p_fileName": {
+									"value": "@{pipeline().parameters.sl_emp_fileName}_@{formatDateTime(utcNow(),'yyyyMMdd')}.csv",
+									"type": "Expression"
+								},
+								"adls_folder": "bronze"
+							},
+							"dimBaseLocation": {
+								"p_folderName": "bronze",
+								"p_filename": {
+									"value": "@{pipeline().parameters.sl_Emp_baseLocation_filename}_@{formatDateTime(utcNow(),'yyyyMMdd')}.parquet",
+									"type": "Expression"
+								}
+							},
+							"dimEmpStack": {
+								"p_filename": {
+									"value": "@{pipeline().parameters.sl_Employee_Stack_filename}_@{formatDateTime(utcNow(),'yyyyMMdd')}.json",
+									"type": "Expression"
+								}
+							},
+							"dimEmployeeDesignation": {
+								"p_fileName": {
+									"value": "@{pipeline().parameters.sl_designation}_@{formatDateTime(utcNow(),'yyyyMMdd')}.csv",
+									"type": "Expression"
+								},
+								"adls_folder": "bronze"
+							},
+							"dimEmployeeShiftAllotment": {
+								"p_fileName": {
+									"value": "@{pipeline().parameters.sl_Employee_shiftAllotment}_@{formatDateTime(utcNow(),'yyyydd')}.csv",
+									"type": "Expression"
+								},
+								"adls_folder": "bronze"
+							},
+							"dimEmpProjectAllocation": {
+								"p_fileName": {
+									"value": "@{pipeline().parameters.sl_emp_project_allocation}_@{formatDateTime(utcNow(),'yyyyMMdd')}.csv",
+									"type": "Expression"
+								},
+								"adls_folder": {
+									"value": "bronze",
+									"type": "Expression"
+								}
+							},
+							"azTargetTble": {
+								"schema": "silver",
+								"table": "emp_silver"
+							}
+						},
+						"linkedServiceParameters": {
+							"azTargetTble": {
+								"schemaLinkedService": {
+									"schema": "silver",
+									"table": "emp_silver"
+								}
+							}
+						}
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			}
+		],
+		"parameters": {
+			"sl_emp_fileName": {
+				"type": "string",
+				"defaultValue": "Employee_info_from_HR"
+			},
+			"sl_Emp_baseLocation_filename": {
+				"type": "string",
+				"defaultValue": "Emp_baseLocation"
+			},
+			"sl_Employee_Stack_filename": {
+				"type": "string",
+				"defaultValue": "Employee_Stack"
+			},
+			"sl_emp_project_allocation": {
+				"type": "string",
+				"defaultValue": "emp_project_allocation"
+			},
+			"sl_Employee_shiftAllotment": {
+				"type": "string",
+				"defaultValue": "Employee_shiftAllotment"
+			},
+			"sl_designation": {
+				"type": "string",
+				"defaultValue": "Employee_designation_from_TA"
+			}
+		},
+		"annotations": [],
+		"lastPublishTime": "2026-06-14T19:47:43Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

@@ -1,0 +1,32 @@
+{
+	"name": "ds_github_csv",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "lk_githb",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"pFileName": {
+				"type": "string",
+				"defaultValue": "Employee_info_from_HR.csv"
+			}
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "HttpServerLocation",
+				"relativeUrl": {
+					"value": "dkgupta2505/org_rawdata/refs/heads/main/@{dataset().pFileName}.csv\n\n\n",
+					"type": "Expression"
+				}
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": []
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

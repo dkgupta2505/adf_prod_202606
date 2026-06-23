@@ -1,0 +1,305 @@
+{
+	"name": "df_fact_emp",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_azSQLdb",
+						"type": "DatasetReference"
+					},
+					"name": "dimEmpSrc"
+				},
+				{
+					"dataset": {
+						"referenceName": "ds_azSQLdb",
+						"type": "DatasetReference"
+					},
+					"name": "dimEmpDesignation"
+				},
+				{
+					"dataset": {
+						"referenceName": "ds_azSQLdb",
+						"type": "DatasetReference"
+					},
+					"name": "dimEmpLocation"
+				},
+				{
+					"dataset": {
+						"referenceName": "ds_azSQLdb",
+						"type": "DatasetReference"
+					},
+					"name": "dimEmpProject"
+				},
+				{
+					"dataset": {
+						"referenceName": "ds_azSQLdb",
+						"type": "DatasetReference"
+					},
+					"name": "dimEmpShift"
+				},
+				{
+					"dataset": {
+						"referenceName": "ds_azSQLdb",
+						"type": "DatasetReference"
+					},
+					"name": "dimEmpTech"
+				},
+				{
+					"dataset": {
+						"referenceName": "ds_azSQLdb",
+						"type": "DatasetReference"
+					},
+					"name": "trgt"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ds_azSQLdb",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				},
+				{
+					"dataset": {
+						"referenceName": "ds_azSQLdb",
+						"type": "DatasetReference"
+					},
+					"name": "sink2"
+				}
+			],
+			"transformations": [
+				{
+					"name": "join1"
+				},
+				{
+					"name": "join2"
+				},
+				{
+					"name": "join3"
+				},
+				{
+					"name": "join4"
+				},
+				{
+					"name": "join5"
+				},
+				{
+					"name": "select1"
+				},
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "exists1"
+				},
+				{
+					"name": "split1"
+				},
+				{
+					"name": "derivedColumn2"
+				},
+				{
+					"name": "alterRow1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          Emp_id as short,",
+				"          First_Name as string,",
+				"          Last_Name as string,",
+				"          Age as short,",
+				"          Band as short,",
+				"          Phone as string,",
+				"          Email as string,",
+				"          State as string,",
+				"          City as string,",
+				"          Flage as string,",
+				"          DOJ as date,",
+				"          DateOfLeaving as date,",
+				"          EffectiveFrom as date,",
+				"          EffectiveTo as date,",
+				"          Base_Location as string,",
+				"          Base_country as string,",
+				"          Stack_Layer as string,",
+				"          Tools_Technologies as string,",
+				"          Designation_Categary as string,",
+				"          Designation as string,",
+				"          Shift_Type as string,",
+				"          Shift_start_hr as string,",
+				"          Shift_end as string,",
+				"          DepartmentName as string,",
+				"          Client_name as string,",
+				"          Client_city as string,",
+				"          Client_contry as string,",
+				"          LoadDT as timestamp",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'select * from  [silver].[emp_silver]\\n',",
+				"     format: 'query') ~> dimEmpSrc",
+				"source(output(",
+				"          designation_id as integer,",
+				"          Designation_Categary as string,",
+				"          Designation as string,",
+				"          LoadDT as timestamp",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> dimEmpDesignation",
+				"source(output(",
+				"          base_location_id as integer,",
+				"          Base_Location as string,",
+				"          Base_country as string,",
+				"          LoadDT as timestamp",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> dimEmpLocation",
+				"source(output(",
+				"          project_id as integer,",
+				"          DepartmentName as string,",
+				"          Client_name as string,",
+				"          Client_city as string,",
+				"          Client_contry as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> dimEmpProject",
+				"source(output(",
+				"          shift_id as integer,",
+				"          Shift_Type as string,",
+				"          Shift_start_hr as short,",
+				"          Shift_end as short",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> dimEmpShift",
+				"source(output(",
+				"          Stack_id as integer,",
+				"          Stack_Layer as string,",
+				"          Tools_Technologies as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> dimEmpTech",
+				"source(output(",
+				"          Emp_id as short,",
+				"          First_Name as string,",
+				"          Last_Name as string,",
+				"          Age as short,",
+				"          Band as short,",
+				"          Phone as string,",
+				"          Email as string,",
+				"          State as string,",
+				"          City as string,",
+				"          Flage as string,",
+				"          DOJ as date,",
+				"          DateOfLeaving as date,",
+				"          EffectiveFrom as date,",
+				"          EffectiveTo as date,",
+				"          designation_id as integer,",
+				"          base_location_id as integer,",
+				"          project_id as integer,",
+				"          shift_id as integer,",
+				"          Stack_id as integer,",
+				"          LoadDT as timestamp",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> trgt",
+				"dimEmpSrc, dimEmpDesignation join(dimEmpSrc@Designation_Categary == dimEmpDesignation@Designation_Categary",
+				"     && dimEmpSrc@Designation == dimEmpDesignation@Designation,",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join1",
+				"join1, dimEmpLocation join(dimEmpSrc@Base_Location == dimEmpLocation@Base_Location",
+				"     && dimEmpSrc@Base_country == dimEmpLocation@Base_country,",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join2",
+				"join2, dimEmpProject join(dimEmpSrc@Client_name == dimEmpProject@Client_name,",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join3",
+				"join3, dimEmpShift join(coalesce(dimEmpSrc@Shift_Type,'a') == coalesce(dimEmpShift@Shift_Type,'a')",
+				"     && coalesce(dimEmpSrc@Shift_start_hr,'a') == coalesce(toString( dimEmpShift@Shift_start_hr),'a')",
+				"     && coalesce(dimEmpSrc@Shift_end,'a') == coalesce(toString(dimEmpShift@Shift_end),'a'),",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join4",
+				"join4, dimEmpTech join(dimEmpSrc@Stack_Layer == dimEmpTech@Stack_Layer",
+				"     && dimEmpSrc@Tools_Technologies == dimEmpTech@Tools_Technologies,",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join5",
+				"join5 select(mapColumn(",
+				"          Emp_id,",
+				"          First_Name,",
+				"          Last_Name,",
+				"          Age,",
+				"          Band,",
+				"          Phone,",
+				"          Email,",
+				"          State,",
+				"          City,",
+				"          Flage,",
+				"          DOJ,",
+				"          DateOfLeaving,",
+				"          EffectiveFrom,",
+				"          EffectiveTo,",
+				"          designation_id,",
+				"          base_location_id,",
+				"          project_id,",
+				"          shift_id,",
+				"          Stack_id",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select1",
+				"select1 derive(LoadDT = currentTimestamp()) ~> derivedColumn1",
+				"derivedColumn1, trgt exists(select1@Emp_id == trgt@Emp_id,",
+				"     negate:false,",
+				"     broadcast: 'auto')~> exists1",
+				"exists1 split(!isNull(Emp_id),",
+				"     disjoint: false) ~> split1@(ExistingRcd, newRcd)",
+				"split1@ExistingRcd derive(Flage = 'N') ~> derivedColumn2",
+				"derivedColumn2 alterRow(updateIf(true())) ~> alterRow1",
+				"alterRow1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     deletable:false,",
+				"     insertable:false,",
+				"     updateable:true,",
+				"     upsertable:false,",
+				"     keys:['Emp_id'],",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> sink1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> sink2"
+			]
+		}
+	}
+}

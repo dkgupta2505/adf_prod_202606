@@ -1,0 +1,170 @@
+{
+	"name": "df_dim_empDesignation",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_azSQLdb",
+						"type": "DatasetReference"
+					},
+					"name": "DimEmpDesignation"
+				},
+				{
+					"dataset": {
+						"referenceName": "ds_azSQLdb",
+						"type": "DatasetReference"
+					},
+					"name": "trgt"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ds_azSQLdb",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				},
+				{
+					"dataset": {
+						"referenceName": "ds_azSQLdb",
+						"type": "DatasetReference"
+					},
+					"name": "sinkUpdateExistingRec"
+				}
+			],
+			"transformations": [
+				{
+					"name": "select1"
+				},
+				{
+					"name": "aggregate1"
+				},
+				{
+					"name": "lookup1"
+				},
+				{
+					"name": "split1"
+				},
+				{
+					"name": "select2"
+				},
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "select3"
+				},
+				{
+					"name": "derivedColumn2"
+				},
+				{
+					"name": "alterRow1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          Emp_id as short,",
+				"          First_Name as string,",
+				"          Last_Name as string,",
+				"          Age as short,",
+				"          Band as short,",
+				"          Phone as string,",
+				"          Email as string,",
+				"          State as string,",
+				"          City as string,",
+				"          Flage as string,",
+				"          DOJ as date,",
+				"          DateOfLeaving as date,",
+				"          EffectiveFrom as date,",
+				"          EffectiveTo as date,",
+				"          Base_Location as string,",
+				"          Base_country as string,",
+				"          Stack_Layer as string,",
+				"          Tools_Technologies as string,",
+				"          Designation_Categary as string,",
+				"          Designation as string,",
+				"          Shift_Type as string,",
+				"          Shift_start_hr as string,",
+				"          Shift_end as string,",
+				"          DepartmentName as string,",
+				"          Client_name as string,",
+				"          Client_city as string,",
+				"          Client_contry as string,",
+				"          LoadDT as timestamp",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> DimEmpDesignation",
+				"source(output(",
+				"          designation_id as integer,",
+				"          Designation_Categary as string,",
+				"          Designation as string,",
+				"          LoadDT as timestamp",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> trgt",
+				"DimEmpDesignation select(mapColumn(",
+				"          Designation_Categary,",
+				"          Designation",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select1",
+				"select1 aggregate(groupBy(Designation_Categary,",
+				"          Designation),",
+				"     cnt = sum(1)) ~> aggregate1",
+				"aggregate1, trgt lookup(aggregate1@Designation_Categary == trgt@Designation_Categary",
+				"     && aggregate1@Designation == trgt@Designation,",
+				"     multiple: true,",
+				"     broadcast: 'auto')~> lookup1",
+				"lookup1 split(isNull(trgt@Designation_Categary)||isNull(trgt@Designation),",
+				"     disjoint: true) ~> split1@(NewRecd, ExistingRcd)",
+				"split1@NewRecd select(mapColumn(",
+				"          Designation_Categary = split1@NewRecd@Designation_Categary,",
+				"          Designation = split1@NewRecd@Designation",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select2",
+				"select2 derive(LoadDT = currentTimestamp()) ~> derivedColumn1",
+				"split1@ExistingRcd select(mapColumn(",
+				"          Designation_Categary = split1@ExistingRcd@Designation_Categary,",
+				"          Designation = split1@ExistingRcd@Designation",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select3",
+				"select3 derive(LoadDT = currentTimestamp()) ~> derivedColumn2",
+				"derivedColumn2 alterRow(updateIf(true())) ~> alterRow1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          Designation_Categary,",
+				"          Designation,",
+				"          LoadDT",
+				"     )) ~> sink1",
+				"alterRow1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> sinkUpdateExistingRec"
+			]
+		}
+	}
+}

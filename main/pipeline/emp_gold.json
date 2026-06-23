@@ -1,0 +1,386 @@
+{
+	"name": "emp_gold",
+	"properties": {
+		"activities": [
+			{
+				"name": "dim_emp",
+				"type": "ExecuteDataFlow",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Succeeded",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "df_dim_emp",
+						"type": "DataFlowReference",
+						"datasetParameters": {
+							"dimEmp": {
+								"schema": "silver",
+								"table": "emp_silver"
+							},
+							"targetDimEmp": {
+								"schema": "gold",
+								"table": "dim_emp"
+							},
+							"InsertNewRecordsToTarget": {
+								"schema": "gold",
+								"table": "dim_emp"
+							},
+							"scd01EmpTrgt": {
+								"schema": "gold",
+								"table": "dim_emp"
+							},
+							"scd2ExpiewdRecord": {
+								"schema": "gold",
+								"table": "dim_emp"
+							},
+							"Scd2OldRecUpdate": {
+								"schema": "gold",
+								"table": "dim_emp"
+							}
+						}
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			},
+			{
+				"name": "dim_empDesignation",
+				"type": "ExecuteDataFlow",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Succeeded",
+				"dependsOn": [
+					{
+						"activity": "dim_emp",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "df_dim_empDesignation",
+						"type": "DataFlowReference",
+						"datasetParameters": {
+							"DimEmpDesignation": {
+								"schema": "silver",
+								"table": "emp_silver"
+							},
+							"trgt": {
+								"schema": "gold",
+								"table": "dim_empDesignation"
+							},
+							"sink1": {
+								"schema": "gold",
+								"table": "dim_empDesignation"
+							},
+							"sinkUpdateExistingRec": {
+								"schema": "gold",
+								"table": "dim_empDesignation"
+							}
+						}
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			},
+			{
+				"name": "dim_empProject",
+				"type": "ExecuteDataFlow",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Succeeded",
+				"dependsOn": [
+					{
+						"activity": "dim_empDesignation",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "df_dim_empProject",
+						"type": "DataFlowReference",
+						"datasetParameters": {
+							"src": {
+								"schema": "silver",
+								"table": "emp_silver"
+							},
+							"trgt": {
+								"schema": "gold",
+								"table": "dim_empProject"
+							},
+							"sinkNewRcd": {
+								"schema": "gold",
+								"table": "dim_empProject"
+							},
+							"sinkUpdateExistingRcd": {
+								"schema": "gold",
+								"table": "dim_empProject"
+							}
+						}
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			},
+			{
+				"name": "dim_empLocation",
+				"type": "ExecuteDataFlow",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Succeeded",
+				"dependsOn": [
+					{
+						"activity": "dim_empProject",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "df_dim_empLocation",
+						"type": "DataFlowReference",
+						"datasetParameters": {
+							"dimEmpLocationSrc": {
+								"schema": "silver",
+								"table": "emp_silver"
+							},
+							"trgt": {
+								"schema": "gold",
+								"table": "dim_empLocation"
+							},
+							"sink1": {
+								"schema": "gold",
+								"table": "dim_empLocation"
+							},
+							"sink2": {
+								"schema": "gold",
+								"table": "dim_empLocation"
+							}
+						}
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			},
+			{
+				"name": "dimEmpShift",
+				"type": "ExecuteDataFlow",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Succeeded",
+				"dependsOn": [
+					{
+						"activity": "dim_empLocation",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "df_dimEmpShift",
+						"type": "DataFlowReference",
+						"datasetParameters": {
+							"dimEmpShiftSrc": {
+								"schema": "silver",
+								"table": "emp_silver"
+							},
+							"trgt": {
+								"schema": "gold",
+								"table": "dim_empShift"
+							},
+							"sink1": {
+								"schema": "gold",
+								"table": "dim_empShift"
+							},
+							"sink2": {
+								"schema": "gold",
+								"table": "dim_empShift"
+							}
+						}
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			},
+			{
+				"name": "dimEmpTech",
+				"type": "ExecuteDataFlow",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Succeeded",
+				"dependsOn": [
+					{
+						"activity": "dimEmpShift",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "df_dimEmpTech",
+						"type": "DataFlowReference",
+						"datasetParameters": {
+							"dimEmpTechSrc": {
+								"schema": "silver",
+								"table": "emp_silver"
+							},
+							"trgt": {
+								"schema": "gold",
+								"table": "dim_empTech"
+							},
+							"sink1": {
+								"schema": "gold",
+								"table": "dim_empTech"
+							},
+							"sink2": {
+								"schema": "gold",
+								"table": "dim_empTech"
+							}
+						}
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			},
+			{
+				"name": "fact_emp",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [
+					{
+						"activity": "dimEmpTech",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "df_fact_emp",
+						"type": "DataFlowReference",
+						"datasetParameters": {
+							"dimEmpSrc": {
+								"schema": "silver",
+								"table": "emp_silver"
+							},
+							"dimEmpDesignation": {
+								"schema": "gold",
+								"table": "dim_empDesignation"
+							},
+							"dimEmpLocation": {
+								"schema": "gold",
+								"table": "dim_empLocation"
+							},
+							"dimEmpProject": {
+								"schema": "gold",
+								"table": "dim_empProject"
+							},
+							"dimEmpShift": {
+								"schema": "gold",
+								"table": "dim_empShift"
+							},
+							"dimEmpTech": {
+								"schema": "gold",
+								"table": "dim_empTech"
+							},
+							"trgt": {
+								"schema": "gold",
+								"table": "fact_emp"
+							},
+							"sink1": {
+								"schema": "gold",
+								"table": "fact_emp"
+							},
+							"sink2": {
+								"schema": "gold",
+								"table": "fact_emp"
+							}
+						}
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			}
+		],
+		"annotations": [],
+		"lastPublishTime": "2026-06-23T16:15:43Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

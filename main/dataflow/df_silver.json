@@ -1,0 +1,252 @@
+{
+	"name": "df_silver",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_adls_csv",
+						"type": "DatasetReference"
+					},
+					"name": "dimEmpRwData"
+				},
+				{
+					"dataset": {
+						"referenceName": "ds_adls_parquet",
+						"type": "DatasetReference"
+					},
+					"name": "dimBaseLocation"
+				},
+				{
+					"dataset": {
+						"referenceName": "ds_adls_json",
+						"type": "DatasetReference"
+					},
+					"name": "dimEmpStack"
+				},
+				{
+					"dataset": {
+						"referenceName": "ds_adls_csv",
+						"type": "DatasetReference"
+					},
+					"name": "dimEmployeeDesignation"
+				},
+				{
+					"dataset": {
+						"referenceName": "ds_adls_csv",
+						"type": "DatasetReference"
+					},
+					"name": "dimEmployeeShiftAllotment"
+				},
+				{
+					"dataset": {
+						"referenceName": "ds_adls_csv",
+						"type": "DatasetReference"
+					},
+					"name": "dimEmpProjectAllocation"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ds_azSQLdb",
+						"type": "DatasetReference"
+					},
+					"name": "azTargetTble"
+				}
+			],
+			"transformations": [
+				{
+					"name": "join1"
+				},
+				{
+					"name": "join2"
+				},
+				{
+					"name": "join3"
+				},
+				{
+					"name": "join4"
+				},
+				{
+					"name": "join5"
+				},
+				{
+					"name": "select1"
+				},
+				{
+					"name": "derivedColumn1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          Emp_id as short,",
+				"          {First Name} as string,",
+				"          {Last Name} as string,",
+				"          Age as short,",
+				"          Band as short,",
+				"          Phone as string,",
+				"          Email as string,",
+				"          State as string,",
+				"          City as string,",
+				"          Flage as string,",
+				"          DOJ as string,",
+				"          DateOfLeaving as string,",
+				"          EffectiveFrom as string,",
+				"          EffectiveTo as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> dimEmpRwData",
+				"source(output(",
+				"          Emp_id as string,",
+				"          Base_Location as string,",
+				"          Base_country as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     format: 'parquet') ~> dimBaseLocation",
+				"source(output(",
+				"          Emp_id as short,",
+				"          Stack_Layer as string,",
+				"          Tools_Technologies as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     documentForm: 'arrayOfDocuments') ~> dimEmpStack",
+				"source(output(",
+				"          Emp_id as short,",
+				"          Designation_Categary as string,",
+				"          Designation as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> dimEmployeeDesignation",
+				"source(output(",
+				"          Emp_id as short,",
+				"          {Shift Type} as string,",
+				"          Shift_start_hr as string,",
+				"          Shift_end as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> dimEmployeeShiftAllotment",
+				"source(output(",
+				"          Emp_id as short,",
+				"          DepartmentName as string,",
+				"          Client_name as string,",
+				"          Client_city as string,",
+				"          Client_contry as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> dimEmpProjectAllocation",
+				"dimEmpRwData, dimBaseLocation join(toString(dimEmpRwData@Emp_id) == dimBaseLocation@Emp_id,",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join1",
+				"join1, dimEmpStack join(toString(dimEmpRwData@Emp_id) == toString(dimEmpStack@Emp_id),",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join2",
+				"join2, dimEmployeeDesignation join(toString(dimEmpRwData@Emp_id) == toString(dimEmployeeDesignation@Emp_id),",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join3",
+				"join3, dimEmployeeShiftAllotment join(toString(dimEmpRwData@Emp_id) == toString(dimEmployeeShiftAllotment@Emp_id),",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join4",
+				"join4, dimEmpProjectAllocation join(toString(dimEmpRwData@Emp_id) == toString(dimEmpProjectAllocation@Emp_id),",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join5",
+				"join5 select(mapColumn(",
+				"          Emp_id = dimEmpRwData@Emp_id,",
+				"          First_Name = {First Name},",
+				"          Last_Name = {Last Name},",
+				"          Age,",
+				"          Band,",
+				"          Phone,",
+				"          Email,",
+				"          State,",
+				"          City,",
+				"          Flage,",
+				"          DOJ,",
+				"          DateOfLeaving,",
+				"          EffectiveFrom,",
+				"          EffectiveTo,",
+				"          Base_Location,",
+				"          Base_country,",
+				"          Stack_Layer,",
+				"          Tools_Technologies,",
+				"          Designation_Categary,",
+				"          Designation,",
+				"          Shift_Type = {Shift Type},",
+				"          Shift_start_hr,",
+				"          Shift_end,",
+				"          DepartmentName,",
+				"          Client_name,",
+				"          Client_city,",
+				"          Client_contry",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select1",
+				"select1 derive(LoadDT = currentTimestamp(),",
+				"          DOJ = toDate((toString(toDate(DOJ, 'dd-MM-yyyy'),'yyyy-MM-dd')),'yyyy-MM-dd'),",
+				"          DateOfLeaving = toDate((toString(toDate(DateOfLeaving, 'dd-MM-yyyy'),'yyyy-MM-dd')),'yyyy-MM-dd'),",
+				"          EffectiveFrom = toDate((toString(toDate(EffectiveFrom, 'dd-MM-yyyy'),'yyyy-MM-dd')),'yyyy-MM-dd'),",
+				"          EffectiveTo = toDate((toString(toDate(EffectiveTo, 'dd-MM-yyyy'),'yyyy-MM-dd')),'yyyy-MM-dd')) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     recreate:true,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          Emp_id,",
+				"          First_Name,",
+				"          Last_Name,",
+				"          Age,",
+				"          Band,",
+				"          Phone,",
+				"          Email,",
+				"          State,",
+				"          City,",
+				"          Flage,",
+				"          DOJ,",
+				"          DateOfLeaving,",
+				"          EffectiveFrom,",
+				"          EffectiveTo,",
+				"          Base_Location,",
+				"          Base_country,",
+				"          Stack_Layer,",
+				"          Tools_Technologies,",
+				"          Designation_Categary,",
+				"          Designation,",
+				"          Shift_Type,",
+				"          Shift_start_hr,",
+				"          Shift_end,",
+				"          DepartmentName,",
+				"          Client_name,",
+				"          Client_city,",
+				"          Client_contry,",
+				"          LoadDT",
+				"     )) ~> azTargetTble"
+			]
+		}
+	}
+}

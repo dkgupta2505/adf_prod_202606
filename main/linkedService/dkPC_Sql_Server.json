@@ -1,0 +1,21 @@
+{
+	"name": "dkPC_Sql_Server",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "SqlServer",
+		"typeProperties": {
+			"server": "DESKTOP-8B7GOS8",
+			"database": "source_emp",
+			"encrypt": "mandatory",
+			"trustServerCertificate": false,
+			"authenticationType": "Windows",
+			"userName": "dk.gupta25@outlook.com",
+			"encryptedCredential": "eyJDcmVkZW50aWFsSWQiOiIwY2MzZDUyYS02MjI1LTRkOWQtOWJjOS1jZDgxODk0Y2MzNmIiLCJWZXJzaW9uIjoiMi4wIiwiQ2xhc3NUeXBlIjoiTWljcm9zb2Z0LkRhdGFQcm94eS5Db3JlLkludGVyU2VydmljZURhdGFDb250cmFjdC5DcmVkZW50aWFsU1UwNkNZMTQifQ=="
+		},
+		"connectVia": {
+			"referenceName": "dkPc",
+			"type": "IntegrationRuntimeReference"
+		}
+	}
+}

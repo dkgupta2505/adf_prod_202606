@@ -1,0 +1,281 @@
+{
+	"name": "df_dim_emp",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_azSQLdb",
+						"type": "DatasetReference"
+					},
+					"name": "dimEmp"
+				},
+				{
+					"dataset": {
+						"referenceName": "ds_azSQLdb",
+						"type": "DatasetReference"
+					},
+					"name": "targetDimEmp"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ds_azSQLdb",
+						"type": "DatasetReference"
+					},
+					"name": "InsertNewRecordsToTarget"
+				},
+				{
+					"dataset": {
+						"referenceName": "ds_azSQLdb",
+						"type": "DatasetReference"
+					},
+					"name": "scd01EmpTrgt"
+				},
+				{
+					"dataset": {
+						"referenceName": "ds_azSQLdb",
+						"type": "DatasetReference"
+					},
+					"name": "scd2ExpiewdRecord"
+				},
+				{
+					"dataset": {
+						"referenceName": "ds_azSQLdb",
+						"type": "DatasetReference"
+					},
+					"name": "Scd2OldRecUpdate"
+				}
+			],
+			"transformations": [
+				{
+					"name": "select1"
+				},
+				{
+					"name": "lookup1"
+				},
+				{
+					"name": "select2"
+				},
+				{
+					"name": "split1"
+				},
+				{
+					"name": "derivedColumn2"
+				},
+				{
+					"name": "exists1"
+				},
+				{
+					"name": "derivedColumn3"
+				},
+				{
+					"name": "alterRow1"
+				},
+				{
+					"name": "scd2Check"
+				},
+				{
+					"name": "derivedColumn4"
+				},
+				{
+					"name": "derivedColumn5"
+				},
+				{
+					"name": "alterRow2"
+				},
+				{
+					"name": "alterRow3"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          Emp_id as short,",
+				"          First_Name as string,",
+				"          Last_Name as string,",
+				"          Age as short,",
+				"          Band as short,",
+				"          Phone as string,",
+				"          Email as string,",
+				"          State as string,",
+				"          City as string,",
+				"          Flage as string,",
+				"          DOJ as date,",
+				"          DateOfLeaving as date,",
+				"          EffectiveFrom as date,",
+				"          EffectiveTo as date,",
+				"          Base_Location as string,",
+				"          Base_country as string,",
+				"          Stack_Layer as string,",
+				"          Tools_Technologies as string,",
+				"          Designation_Categary as string,",
+				"          Designation as string,",
+				"          Shift_Type as string,",
+				"          Shift_start_hr as string,",
+				"          Shift_end as string,",
+				"          DepartmentName as string,",
+				"          Client_name as string,",
+				"          Client_city as string,",
+				"          Client_contry as string,",
+				"          LoadDT as timestamp",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'select * from  [silver].[emp_silver]',",
+				"     format: 'query') ~> dimEmp",
+				"source(output(",
+				"          Emp_id as string,",
+				"          First_Name as string,",
+				"          Last_Name as string,",
+				"          Age as short,",
+				"          Band as short,",
+				"          Phone as string,",
+				"          Email as string,",
+				"          State as string,",
+				"          City as string,",
+				"          Flage as string,",
+				"          DOJ as date,",
+				"          DateOfLeaving as date,",
+				"          EffectiveFrom as date,",
+				"          EffectiveTo as date,",
+				"          LoadDT as timestamp",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'select * from [gold].[dim_emp] where Flage=\\'Y\\'',",
+				"     format: 'query') ~> targetDimEmp",
+				"dimEmp select(mapColumn(",
+				"          Emp_id,",
+				"          First_Name,",
+				"          Last_Name,",
+				"          Age,",
+				"          Band,",
+				"          Phone,",
+				"          Email,",
+				"          State,",
+				"          City,",
+				"          Flage,",
+				"          DOJ,",
+				"          DateOfLeaving,",
+				"          EffectiveFrom,",
+				"          EffectiveTo",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select1",
+				"select1, targetDimEmp lookup(toString(select1@Emp_id) == targetDimEmp@Emp_id,",
+				"     multiple: true,",
+				"     broadcast: 'auto')~> lookup1",
+				"lookup1 select(mapColumn(",
+				"          Emp_id = select1@Emp_id,",
+				"          First_Name = select1@First_Name,",
+				"          Last_Name = select1@Last_Name,",
+				"          Age = select1@Age,",
+				"          Band = select1@Band,",
+				"          Phone = select1@Phone,",
+				"          Email = select1@Email,",
+				"          State = select1@State,",
+				"          City = select1@City,",
+				"          Flage = select1@Flage,",
+				"          DOJ = select1@DOJ,",
+				"          DateOfLeaving = select1@DateOfLeaving,",
+				"          EffectiveFrom = select1@EffectiveFrom,",
+				"          EffectiveTo = select1@EffectiveTo,",
+				"          trg_Emp_id = targetDimEmp@Emp_id",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select2",
+				"select2 split(isNull(toString(trg_Emp_id)),",
+				"     disjoint: false) ~> split1@(NewRecords, ExistingRecords)",
+				"split1@NewRecords derive(ModifiedDt = currentTimestamp(),",
+				"          LoadDT = currentTimestamp()) ~> derivedColumn2",
+				"split1@ExistingRecords, targetDimEmp exists(((toString(split1@ExistingRecords@Emp_id)==toString(trg_Emp_id)) && (targetDimEmp@Phone!=split1@ExistingRecords@Phone)),",
+				"     negate:false,",
+				"     broadcast: 'auto')~> exists1",
+				"exists1 derive(ModifiedDt = currentTimestamp(),",
+				"          LoadDT = currentTimestamp(),",
+				"          Flage = \"Y\") ~> derivedColumn3",
+				"derivedColumn3 alterRow(insertIf(true())) ~> alterRow1",
+				"split1@ExistingRecords, targetDimEmp exists((toString(split1@ExistingRecords@Emp_id)==toString(targetDimEmp@Emp_id)) &&(split1@ExistingRecords@Band!=targetDimEmp@Band ||split1@ExistingRecords@City!=targetDimEmp@City),",
+				"     negate:false,",
+				"     broadcast: 'auto')~> scd2Check",
+				"scd2Check derive(EffectiveTo = toDate(toString(currentDate()-1, 'yyyy-MM-dd'),'yyyy-MM-dd'),",
+				"          EffectiveFrom = toDate(toString(currentDate(), 'yyyy-MM-dd'),'yyyy-MM-dd'),",
+				"          ModifiedDt = currentTimestamp(),",
+				"          Flage = \"N\") ~> derivedColumn4",
+				"scd2Check derive(EffectiveTo = toDate(toString(currentDate()-1, 'yyyy-MM-dd'),'yyyy-MM-dd'),",
+				"          ModifiedDt = currentTimestamp(),",
+				"          Flage = \"Y\") ~> derivedColumn5",
+				"derivedColumn5 alterRow(updateIf(true())) ~> alterRow2",
+				"derivedColumn4 alterRow(updateIf(true())) ~> alterRow3",
+				"derivedColumn2 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     saveOrder: 1,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> InsertNewRecordsToTarget",
+				"alterRow1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     saveOrder: 2,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          Emp_id,",
+				"          First_Name,",
+				"          Last_Name,",
+				"          Age,",
+				"          Band,",
+				"          Phone,",
+				"          Email,",
+				"          State,",
+				"          City,",
+				"          Flage,",
+				"          DOJ,",
+				"          DateOfLeaving,",
+				"          EffectiveFrom,",
+				"          EffectiveTo,",
+				"          trg_Emp_id,",
+				"          ModifiedDt,",
+				"          LoadDT",
+				"     )) ~> scd01EmpTrgt",
+				"alterRow3 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     deletable:false,",
+				"     insertable:false,",
+				"     updateable:true,",
+				"     upsertable:false,",
+				"     keys:['Emp_id'],",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     saveOrder: 2,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> scd2ExpiewdRecord",
+				"alterRow2 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     saveOrder: 2,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> Scd2OldRecUpdate"
+			]
+		}
+	}
+}

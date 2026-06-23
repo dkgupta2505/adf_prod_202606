@@ -1,0 +1,176 @@
+{
+	"name": "df_dim_empLocation",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_azSQLdb",
+						"type": "DatasetReference"
+					},
+					"name": "dimEmpLocationSrc"
+				},
+				{
+					"dataset": {
+						"referenceName": "ds_azSQLdb",
+						"type": "DatasetReference"
+					},
+					"name": "trgt"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ds_azSQLdb",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				},
+				{
+					"dataset": {
+						"referenceName": "ds_azSQLdb",
+						"type": "DatasetReference"
+					},
+					"name": "sink2"
+				}
+			],
+			"transformations": [
+				{
+					"name": "select1"
+				},
+				{
+					"name": "aggregate1"
+				},
+				{
+					"name": "split1"
+				},
+				{
+					"name": "lookup1"
+				},
+				{
+					"name": "select2"
+				},
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "alterRow1"
+				},
+				{
+					"name": "derivedColumn2"
+				},
+				{
+					"name": "alterRow2"
+				},
+				{
+					"name": "exists1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          Emp_id as short,",
+				"          First_Name as string,",
+				"          Last_Name as string,",
+				"          Age as short,",
+				"          Band as short,",
+				"          Phone as string,",
+				"          Email as string,",
+				"          State as string,",
+				"          City as string,",
+				"          Flage as string,",
+				"          DOJ as date,",
+				"          DateOfLeaving as date,",
+				"          EffectiveFrom as date,",
+				"          EffectiveTo as date,",
+				"          Base_Location as string,",
+				"          Base_country as string,",
+				"          Stack_Layer as string,",
+				"          Tools_Technologies as string,",
+				"          Designation_Categary as string,",
+				"          Designation as string,",
+				"          Shift_Type as string,",
+				"          Shift_start_hr as string,",
+				"          Shift_end as string,",
+				"          DepartmentName as string,",
+				"          Client_name as string,",
+				"          Client_city as string,",
+				"          Client_contry as string,",
+				"          LoadDT as timestamp",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'select * from  [silver].[emp_silver]',",
+				"     format: 'query') ~> dimEmpLocationSrc",
+				"source(output(",
+				"          base_location_id as integer,",
+				"          Base_Location as string,",
+				"          Base_country as string,",
+				"          LoadDT as timestamp",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> trgt",
+				"dimEmpLocationSrc select(mapColumn(",
+				"          Base_Location,",
+				"          Base_country",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select1",
+				"select1 aggregate(groupBy(Base_Location,",
+				"          Base_country),",
+				"     cnt = count(1)) ~> aggregate1",
+				"select2 split(!isNull(base_location_id),",
+				"     disjoint: false) ~> split1@(existingEcd, newrcd)",
+				"aggregate1, trgt lookup(aggregate1@Base_Location == trgt@Base_Location",
+				"     && aggregate1@Base_country == trgt@Base_country,",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> lookup1",
+				"lookup1 select(mapColumn(",
+				"          Base_Location = aggregate1@Base_Location,",
+				"          Base_country = aggregate1@Base_country,",
+				"          base_location_id",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select2",
+				"exists1 derive(LoadDT = currentTimestamp()) ~> derivedColumn1",
+				"derivedColumn1 alterRow(updateIf(true())) ~> alterRow1",
+				"split1@newrcd derive(LoadDT = currentTimestamp()) ~> derivedColumn2",
+				"derivedColumn2 alterRow(insertIf(true())) ~> alterRow2",
+				"split1@existingEcd, trgt exists(split1@existingEcd@Base_Location == trgt@Base_Location",
+				"     && split1@existingEcd@Base_country == trgt@Base_country,",
+				"     negate:false,",
+				"     broadcast: 'auto')~> exists1",
+				"alterRow1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     deletable:false,",
+				"     insertable:false,",
+				"     updateable:true,",
+				"     upsertable:false,",
+				"     keys:['base_location_id'],",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> sink1",
+				"alterRow2 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          Base_Location,",
+				"          Base_country,",
+				"          LoadDT",
+				"     )) ~> sink2"
+			]
+		}
+	}
+}

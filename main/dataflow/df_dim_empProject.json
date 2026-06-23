@@ -1,0 +1,184 @@
+{
+	"name": "df_dim_empProject",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_azSQLdb",
+						"type": "DatasetReference"
+					},
+					"name": "src"
+				},
+				{
+					"dataset": {
+						"referenceName": "ds_azSQLdb",
+						"type": "DatasetReference"
+					},
+					"name": "trgt"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ds_azSQLdb",
+						"type": "DatasetReference"
+					},
+					"name": "sinkNewRcd"
+				},
+				{
+					"dataset": {
+						"referenceName": "ds_azSQLdb",
+						"type": "DatasetReference"
+					},
+					"name": "sinkUpdateExistingRcd"
+				}
+			],
+			"transformations": [
+				{
+					"name": "select1"
+				},
+				{
+					"name": "aggregate1"
+				},
+				{
+					"name": "lookup1"
+				},
+				{
+					"name": "select2"
+				},
+				{
+					"name": "split1"
+				},
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "alterRow1"
+				},
+				{
+					"name": "derivedColumn2"
+				},
+				{
+					"name": "alterRow2"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          Emp_id as short,",
+				"          First_Name as string,",
+				"          Last_Name as string,",
+				"          Age as short,",
+				"          Band as short,",
+				"          Phone as string,",
+				"          Email as string,",
+				"          State as string,",
+				"          City as string,",
+				"          Flage as string,",
+				"          DOJ as date,",
+				"          DateOfLeaving as date,",
+				"          EffectiveFrom as date,",
+				"          EffectiveTo as date,",
+				"          Base_Location as string,",
+				"          Base_country as string,",
+				"          Stack_Layer as string,",
+				"          Tools_Technologies as string,",
+				"          Designation_Categary as string,",
+				"          Designation as string,",
+				"          Shift_Type as string,",
+				"          Shift_start_hr as string,",
+				"          Shift_end as string,",
+				"          DepartmentName as string,",
+				"          Client_name as string,",
+				"          Client_city as string,",
+				"          Client_contry as string,",
+				"          LoadDT as timestamp",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'select * from [silver].[emp_silver]',",
+				"     format: 'query') ~> src",
+				"source(output(",
+				"          project_id as integer,",
+				"          DepartmentName as string,",
+				"          Client_name as string,",
+				"          Client_city as string,",
+				"          Client_contry as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> trgt",
+				"src select(mapColumn(",
+				"          DepartmentName,",
+				"          Client_name,",
+				"          Client_city,",
+				"          Client_contry",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select1",
+				"select1 aggregate(groupBy(DepartmentName,",
+				"          Client_name,",
+				"          Client_city,",
+				"          Client_contry),",
+				"     cnt = sum(1)) ~> aggregate1",
+				"aggregate1, trgt lookup(aggregate1@Client_name == trgt@Client_name,",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> lookup1",
+				"lookup1 select(mapColumn(",
+				"          DepartmentName = aggregate1@DepartmentName,",
+				"          Client_name = aggregate1@Client_name,",
+				"          Client_city = aggregate1@Client_city,",
+				"          Client_contry = aggregate1@Client_contry,",
+				"          cnt,",
+				"          project_id",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select2",
+				"select2 split(isNull(project_id),",
+				"     disjoint: false) ~> split1@(NewRecrd, ExistingRcd)",
+				"split1@NewRecrd derive(LoadDT = currentTimestamp()) ~> derivedColumn1",
+				"derivedColumn1 alterRow(insertIf(true())) ~> alterRow1",
+				"split1@ExistingRcd derive(LoadDT = currentTimestamp()) ~> derivedColumn2",
+				"derivedColumn2 alterRow(updateIf(true())) ~> alterRow2",
+				"alterRow1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          DepartmentName,",
+				"          Client_name,",
+				"          Client_city,",
+				"          Client_contry,",
+				"          LoadDT",
+				"     )) ~> sinkNewRcd",
+				"alterRow2 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          DepartmentName,",
+				"          Client_name,",
+				"          Client_city,",
+				"          Client_contry,",
+				"          LoadDT",
+				"     )) ~> sinkUpdateExistingRcd"
+			]
+		}
+	}
+}
