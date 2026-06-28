@@ -19,6 +19,12 @@
 				},
 				{
 					"name": "aggregate1"
+				},
+				{
+					"name": "surrogateKey1"
+				},
+				{
+					"name": "rank1"
 				}
 			],
 			"scriptLines": [
@@ -41,10 +47,17 @@
 				"     ),",
 				"     skipDuplicateMapInputs: false,",
 				"     skipDuplicateMapOutputs: false) ~> flatten1",
-				"flatten1 aggregate(groupBy(name,",
+				"rank1 aggregate(groupBy(name,",
 				"          id,",
-				"          email),",
-				"     roles = collect(roles)) ~> aggregate1"
+				"          email,",
+				"          rnk_nbr),",
+				"     roles = collect(roles)) ~> aggregate1",
+				"flatten1 keyGenerate(output(SrKey as long),",
+				"     startAt: 100L,",
+				"     stepValue: 2L) ~> surrogateKey1",
+				"surrogateKey1 rank(asc(name, true),",
+				"     output(rnk_nbr as long),",
+				"     dense: true) ~> rank1"
 			]
 		}
 	}
